@@ -1,0 +1,24 @@
+WHILE;
+for;
+EnuM;
+c:=5;
+"nilay";
+h_i:=hello+25; (*addition*)
+hEllo++; (*increment*)
+hello--;
+k := {13} * (55) + [a];
+b := 3*5;
+c := 7/8;
+l :="yekta";
+b := "yek";
+(*deneme*)
+while(1){
+    if(a := 3){
+(*this is a comment*)
+a = "ornekstring";
+    }
+}
+
+(*this is an another comment*)
+const a := 1;
+

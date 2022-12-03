@@ -1,0 +1,280 @@
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+bool isValidDelimiter(char ch)
+{
+    //Ayraçları kontrol eder.
+    if (ch == ' ' || ch == '+' || ch == '-' || ch == '*' || ch == '\n' || ch == '\t' ||
+            ch == '/' || ch == ':' || ch == '=' || ch == ';' || ch == '(' || ch == ')' ||
+            ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '"')
+        return (true);
+    return (false);
+}
+bool isValidOperator(char ch)
+{
+    //Operatörleri kontrol eder.
+    if (ch == '+' || ch == '-' || ch == '*' ||
+            ch == '/')
+        return (true);
+    return (false);
+}
+
+bool isEndOfLine(char ch)
+{
+    //Satir sonu karakterini kontrol eder.
+    if(ch == ';') return true;
+    return false;
+}
+
+// Returns 'true' if the string is a VALID IDENTIFIER.
+bool isvalidIdentifier(char* str)
+{
+    //Indetifierları kontrol eder.
+   if (str[0] == '0' || str[0] == '1' || str[0] == '2' ||
+            str[0] == '3' || str[0] == '4' || str[0] == '5' ||
+            str[0] == '6' || str[0] == '7' || str[0] == '8' ||
+            str[0] == '9' || str[0] == '_' || str[0] == '.'|| str[0] == '"' || str[0] == '('|| isValidDelimiter(str[0]) == true)
+        return (false);
+    return (true);
+}
+bool isValidKeyword(char* str)
+{
+    //Keywordleri kontrol eder.
+    if (!strcmp(str, "break") || !strcmp(str, "case") || !strcmp(str, "char") || !strcmp(str, "const") ||    !strcmp(str, "continue") || !strcmp(str, "do") || !strcmp(str, "else")
+            || !strcmp(str, "enum") || !strcmp(str, "float") || !strcmp(str, "for") || !strcmp(str,    "goto") || !strcmp(str, "if") || !strcmp(str, "int")
+            || !strcmp(str, "long") || !strcmp(str, "record") || !strcmp(str, "return") || !strcmp(str, "static") || !strcmp(str, "while"))
+        return (true);
+    return (false);
+}
+bool isValidInteger(char* str)
+{
+    //Intergerları kontrol eder.
+    int i, len = strlen(str);
+
+    if (len == 0)
+        return (false);
+
+    for (i = 0; i < len; i++)
+    {
+        if (str[i] != '0' && str[i] != '1' && str[i] != '2'&& str[i] != '3' && str[i] != '4' && str[i] != '5'
+                && str[i] != '6' && str[i] != '7' && str[i] != '8' && str[i] != '9' || (str[i] == '-' && i > 0))
+            return (false);
+    }
+    return (true);
+}
+bool isRealNumber(char* str)
+{
+    //Floating point numberları kontrole eder.
+    int i, len = strlen(str);
+    bool hasDecimal = false;
+    if (len == 0)
+        return (false);
+    for (i = 0; i < len; i++)
+    {
+        if (str[i] != '0' && str[i] != '1' && str[i] != '2' && str[i] != '3' && str[i] != '4' && str[i]       != '5' && str[i] != '6' && str[i] != '7' && str[i] != '8'
+                && str[i] != '9' && str[i] != '.' || (str[i] == '-' && i > 0))
+            return (false);
+        if (str[i] == '.')
+            hasDecimal = true;
+    }
+    return (hasDecimal);
+}
+
+
+char* subString(char* str, int left, int right)
+{
+    int i;
+    char* subStr = (char*)malloc( sizeof(char) * (right - left + 2));
+    for (i = left; i <= right; i++)
+        subStr[i - left] = str[i];
+    subStr[right - left + 1] = '\0';
+    return (subStr);
+}
+
+/*left ve right olarak adlandırdığımız iki iterratör dosya üzerinde dolaşarak geçerli kelimeleri belirlediğimiz
+kurallara göre substringlere ayrır.*/
+
+
+void detectTokens(char* str, FILE *fp)
+{
+    //Yukarıda yazılan fonksiyonları kullanarak tokenleri ayırır ve yazdırır.
+    int left = 0, right = 0;
+    int length = strlen(str);
+    while (right <= length && left <= right)
+    {
+
+        if (isValidDelimiter(str[right]) == false )
+        {
+            right++;
+        }
+        else if (isValidDelimiter(str[right]) == true && left == right)
+        {
+
+
+            if(isEndOfLine(str[right]))
+            {
+                fprintf(fp,"EndOfLine\n");
+
+            }
+            else if((str[right] == '(' && str[right+1] == '*'))
+            {
+                int tmp = right;
+                int i;
+                for(i = tmp;  i < strlen(str); i++)
+                {
+                    if(str[i] == '*' && str [i+1] == ')')
+                    {
+
+                        right = i+1;
+                        left = right;
+                        break;
+
+                    }
+                }
+
+                if(i == strlen(str))
+                {
+                    fprintf(fp,"ERROR: Invalid comment\n");
+                    exit(1);
+                }
+
+            }
+
+            else if(str[right] == '(')
+            {
+                fprintf(fp,"LeftPar\n");
+            }
+            else if(str[right] == ')')
+            {
+                fprintf(fp,"RightPar\n");
+            }
+            else if(str[right] == '[')
+            {
+                fprintf(fp,"LeftSquareBracket\n");
+            }
+            else if(str[right] == ']')
+            {
+                fprintf(fp,"RightSquareBracket\n");
+            }
+            else if(str[right] == '{')
+            {
+                fprintf(fp,"LeftCurlyBracket\n");
+            }
+            else if(str[right] == '}')
+            {
+                fprintf(fp,"RightCurlyBracket\n");
+            }
+            else if((str[right] == '+' && str[right+1] == '+') || (str[right] == '-' && str[right+1] == '-') || (str[right] == ':' && str[right+1] == '='))
+            {
+                fprintf(fp,"Operator(%c%c)\n", str[right],str[right+1]);
+                right++;
+
+            }
+
+
+            else if (isValidOperator(str[right]) == true)
+            {
+                fprintf(fp,"Operator(%c)\n", str[right]);
+            }
+            else if(str[right] == '"'){
+                    int i;
+                for(i = right+1; i < strlen(str); i++){
+                    if(str[i] == '"'){
+                        right = i;
+                        char *string = subString(str, left, right);
+                        fprintf(fp,"StringConstant(%s)\n", string);
+                        break;
+                    }
+                }
+                if(i == strlen(str)) {
+                    fprintf(fp,"ERROR: Invalid String(%s) \n", subString(str, left, i));
+                    exit(1);
+                }
+
+            }
+
+
+            right++;
+            left = right;
+
+
+
+        }
+        else if (isValidDelimiter(str[right]) == true && left != right || (right == length && left != right) )
+        {
+            char* subStr = subString(str, left, right - 1);
+            if(subStr[0] == '\n') subStr = subString(subStr, 1, strlen(subStr)-1);
+            if (isValidKeyword(subStr) == true)
+                fprintf(fp,"Keyword(%s)\n", subStr);
+            else if (isValidInteger(subStr) == true)
+            {
+
+                if(strlen(subStr) > 10)
+                {
+                    fprintf(fp,"ERROR: Integer cannot be longer than 10 digits(%s)\n", subStr);
+                    exit(1);
+                }
+                else
+                    fprintf(fp,"IntConst(%s)\n", subStr);
+            }
+
+
+            else if (isRealNumber(subStr) == true)
+            {
+                fprintf(fp,"ERROR: Floating point numbers are invalid");
+                exit(1);
+            }
+
+            else if (isvalidIdentifier(subStr) == true
+                     && isValidDelimiter(str[right - 1]) == false)
+            {
+                if(strlen(subStr) > 20)
+                {
+                    fprintf(fp,"ERROR: Identifiers cannot be longer than 20 characters(%s)\n", subStr);
+                    exit(1);
+                }
+                fprintf(fp,"Identifier(%s)\n", strupr(subStr));
+            }
+
+            else if (isvalidIdentifier(subStr) == false
+                     && isValidDelimiter(str[right - 1]) == false)
+            {
+
+
+                    fprintf(fp,"ERROR: Invalid Identifier(%s)\n", subStr);
+                    exit(1);
+
+
+
+            }
+            left=right;
+        }
+    }
+    return;
+}
+int main()
+{
+
+//To read from file, fopen returns a FILE pointer to "filePointer" in reading mode.
+
+    FILE *fptr=fopen("code.psi","r");
+	int ct = 0;
+	char ch;
+	while((ch=fgetc(fptr))!=EOF)
+		ct++;
+    ct--;
+    //Dosya okunuyor ve bir array içine atılıyor. Arraye gerekli olan hafızayı ayırabilmek için
+    //ilk önce doysada kaç karakter olduğu belirleniyor.
+	fclose(fptr);
+    char buffer[ct]; // Buffer to store data
+    FILE * stream;
+    stream = fopen("code.psi", "r");
+    FILE *f2w = fopen("code.lex", "w");
+    int count = fread(buffer, sizeof(char), ct, stream);
+    strlwr(buffer);
+    fclose(stream);
+    detectTokens(buffer, f2w);
+    fclose(f2w);
+    return (0);
+}
